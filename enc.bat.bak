@@ -1,0 +1,2 @@
+set CLASSPATH=.;e:\programacion\edtsoft\encapsulador\pepe.jar;.\classses111.jar
+java -cp classses111.jar -jar encapsulador.jar

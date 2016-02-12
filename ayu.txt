@@ -1,0 +1,81 @@
+ENCAPSULADOR 1.0
+
+FUNCIONES
+
+- Crea Clases que encapsulan el resultado de una SQL
+
+- Genera el código necesario para conectar la clase con un ResultSet
+
+- Genera clases a partir de textos con pares de valores nombre, tipo,
+
+EL MENU OPCIONES
+
+-Generar clase a partir de texto
+
+Genera la clase a partir de pares de valores nombre, tipo, por ejemplo
+Nombre,String,
+Apellidos,String,
+
+No te olvides de poner todas las comas, porque esto se trata luego
+con StringTokenizer
+
+
+-Emplear Conversion exacta de tipos
+
+Convierte los tipos de datos conforme a lo especificado en el
+archivo de configuracion.
+Si no encuentra algún tipo de dato, dejará el tipo de dato SQL. 
+Por ejemplo dejaría "NUMBER".
+
+El archivo de configuración se llama conv.txt y debe estar en el mismo
+directorio que las clases.
+
+
+EL MENU CLASE
+
+-Todos como String
+Convierte todos los atributos a String
+
+- Forzar conversion interna de datos
+La conversion interna de datos se hace sólo si no se puede
+obtener el tipo Java adecuado (Esto ocurre se intenta obtener el tipo
+de dato Java de una columna cuyo valor es null) . Si se fuerza
+la conversion interna de datos se realiza la conversion interna de
+datos independientemente de que se hayan conseguido o no
+los tipos de datos Java.
+
+- Generar codigo de conexion.
+
+Crea una función que, recibiendo un ResultSet, establece los 
+valores de los atributos con lo que tenga el ResultSet.
+
+EL MENU EDICION
+
+No funciona ni uno. Pero sí los atajos de teclado CONTROL-C, etc.
+
+EL MENU ARCHIVO
+
+funciona todo menos Guardar. Emplea Guardar como
+
+BOTÓN NORMALIZAR CADENA.
+
+Hay que darle si pones retornos de carro o abres algún archivo
+normalizar cadena hace lo siguiente:
+
+ -Quita espacios iniciales y finales
+ -Quita espacios repetidos
+ -Quita retornos de carro y tabuladores
+ -Pega los signos de puntuacion a la palabra anterior
+ -Pega los signos de cierre a la palabra anterior
+ -Separa los signos de apertura de la palabra anterior
+
+EL BOTON GENERAR LETRAS
+
+Genera todas las letras necesarias para hacer la clase.
+
+Comentarios y criticas destructivas son bien recibidas.
+
+edtrobo@indra.es
+
+
+

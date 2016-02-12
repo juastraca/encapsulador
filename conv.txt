@@ -1,0 +1,4 @@
+NUMBER,Integer, 
+VARCHAR,String, 
+VARCHAR2,String, 
+DATE, java.util.Date  
