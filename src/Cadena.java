@@ -16,9 +16,7 @@
  */
 public class Cadena extends java.lang.Object {
     
-    /** Creates new Cadena */
-    public Cadena() {}
-    
+        
     /** <PRE>Esta funci�n deja la cadena como te gustar�a recibirla; a saber:
      * -Quita espacios iniciales y finales
      * -Quita espacios repetidos
