@@ -209,7 +209,6 @@
     </Component>
     <Component class="javax.swing.JTextField" name="txturl">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jdbc:oracle:thin:@172.24.58.105:1521:enapred0"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
       <Events>
@@ -243,7 +242,6 @@
     </Component>
     <Component class="javax.swing.JTextField" name="txtpassw">
       <Properties>
-        <Property name="text" type="java.lang.String" value="US_PREDICTORESOWNER"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
       <Constraints>
