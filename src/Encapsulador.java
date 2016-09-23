@@ -111,6 +111,7 @@ public class Encapsulador extends javax.swing.JFrame {
         getContentPane().add(txtusuario);
         txtusuario.setBounds(10, 80, 180, 20);
 
+        txturl.setText("jdbc:oracle:thin:@servidor:puerto:sid");
         txturl.setToolTipText("");
         txturl.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

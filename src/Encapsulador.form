@@ -209,6 +209,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="txturl">
       <Properties>
+        <Property name="text" type="java.lang.String" value="jdbc:oracle:thin:@servidor:puerto:sid"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
       <Events>
