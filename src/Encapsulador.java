@@ -21,7 +21,7 @@ public class Encapsulador extends javax.swing.JFrame {
      * Creates new form Encapsulador
      */
     private Connection conn; 
-    private final char COMA = ',';
+    private static final char COMA = ',';
     
     private HashMap<String, String> conversion = new HashMap<>();
 
@@ -370,8 +370,7 @@ public class Encapsulador extends javax.swing.JFrame {
 
     private void crearClase(ResultSet rs) throws Exception {
 
-        Hashtable ht;
-        ResultSetMetaData rsmd;
+       ResultSetMetaData rsmd;
 
         //TODO: Cambiar a arraylist, esto es de hace mil años...
         Vector nombres = new Vector();
@@ -391,10 +390,10 @@ public class Encapsulador extends javax.swing.JFrame {
             String nombreColumna = rsmd.getColumnName(i);
 
             String tipoColumna = rsmd.getColumnTypeName(i);
-            if (!this.chktipo.isSelected()) {
+            if (!this.chktipo.isSelected()) { //todos como String
                 try {
                     if (!this.chkConversionInterna.isSelected()) {
-                        //tipoColumna = rs.getObject(nombreColumna).getClass().getName();
+                        
                         tipoColumna = rsmd.getColumnClassName(i);
                         tipoColumna = tipoColumna.substring(tipoColumna.lastIndexOf('.') + 1);
                     } else {
@@ -489,15 +488,13 @@ public class Encapsulador extends javax.swing.JFrame {
 
     private void crearClase() {
 
-        Hashtable ht;
+        ArrayList<String> nombres = new ArrayList<>();
+        ArrayList<String> tiposJava = new ArrayList<>();
+        
 
-        Vector nombres = new Vector();
-        Vector tipos = new Vector();
-        Vector tiposJava = new Vector();
-
-        StringBuffer salida = new StringBuffer();
-        salida.append("public class " + this.txtNombreClase.getText() + " { \n");
-        //salida.append("public PonElNombre(){\n}");
+        StringBuilder salida = new StringBuilder();
+        salida.append("public class ").append(this.txtNombreClase.getText()).append(" { \n");
+       
 
         StringTokenizer st = new StringTokenizer(this.txtconsulta.getText(), ",");
 
@@ -511,33 +508,30 @@ public class Encapsulador extends javax.swing.JFrame {
             }
 
             nombres.add(nombreColumna);
-            tipos.add(tipoColumna);
+            tiposJava.add(tipoColumna);
         }
 
         for (int i = 0; i < nombres.size(); i++) {
             salida.append("private");
-            salida.append(tipos.elementAt(i));
+            salida.append(tiposJava.get(i));
             salida.append(' ');
-            salida.append(nombres.elementAt(i).toString().toLowerCase());
+            salida.append(nombres.get(i).toLowerCase());
             salida.append(" = null;");
             salida.append('\n');
 
         }
 
         for (int i = 0; i < nombres.size(); i++) {
-			//salida.append("public "); 
-
-			//salida.append(tipos.elementAt(i).toString());
-            //salida.append(' ');
-            String nombreFuncionGet = "public final " + tipos.elementAt(i).toString() + " get" + nombres.elementAt(i).toString().substring(0, 1).toUpperCase() + nombres.elementAt(i).toString().substring(1) + "()";
-            String nombreFuncionSet = "public final void set" + nombres.elementAt(i).toString().substring(0, 1).toUpperCase() + nombres.elementAt(i).toString().substring(1) + "(" + tipos.elementAt(i).toString() + " valor )";
+	
+            String nombreFuncionGet = "public final " + tiposJava.get(i).toString() + " get" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "()";
+            String nombreFuncionSet = "public final void set" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "(" + tiposJava.get(i).toString() + " valor )";
             salida.append(nombreFuncionGet);
-            salida.append("{\n return " + nombres.elementAt(i).toString().toLowerCase() + ";\n}");
+            salida.append("{\n return " + nombres.get(i).toString().toLowerCase() + ";\n}");
 
             salida.append('\n');
             salida.append(nombreFuncionSet);
             salida.append("{\n");
-            salida.append(nombres.elementAt(i).toString() + " = valor;\n}\n");
+            salida.append(nombres.get(i).toString() + " = valor;\n}\n");
 
         }
 
@@ -549,14 +543,17 @@ public class Encapsulador extends javax.swing.JFrame {
     }
 
     private String convertirDatoJava(String tipoDato) {
-        if (this.chkConversionExacta.isSelected()) {
+        if (this.chkConversionExacta.isSelected()) { //emplea fichro de configuracion
             if (this.conversion.get(tipoDato) != null) {
                 tipoDato = (String) this.conversion.get(tipoDato);
+            }
+            else{
+                tipoDato = "String";
             }
 
         }
         if (tipoDato.indexOf("NUMBER") > -1) {
-            tipoDato = "Long";
+            tipoDato = "Integer";
 
         }
         if (tipoDato.indexOf("VARCHAR") > -1) {
@@ -564,7 +561,7 @@ public class Encapsulador extends javax.swing.JFrame {
         }
 
         if (tipoDato.indexOf("DATE") > -1) {
-            tipoDato = "java.util.Date";
+            tipoDato = "Date";
         }
 
         return tipoDato;
