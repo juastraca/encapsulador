@@ -36,7 +36,7 @@ public class Cadena extends java.lang.Object {
      * @return la cadena normalizada
      */
     
-    public static String normalizarCadena(java.lang.String cadena) {
+    public static String normalizarCadena(String cadena) {
         
         StringBuffer nuevaCadena = new StringBuffer();
         final String SIMBOLOS_CIERRE = "?,;:.)}";
@@ -47,18 +47,16 @@ public class Cadena extends java.lang.Object {
         char charanterior;
         char charactual;
         char [] ccad;
-        cadena = cadena.trim();
+        String tmpcad  = cadena.trim();
         charanterior = '@';
         
-        String cadenaQuitados = new String();
-        for(int i = 0; i< cadena.length(); i++){
+        String cadenaQuitados = "";
+        for(int i = 0; i< tmpcad.length(); i++){
             
             
-            if(SIMBOLOS_A_QUITAR.indexOf(cadena.charAt(i))==-1)
+            if(SIMBOLOS_A_QUITAR.indexOf(tmpcad.charAt(i))==-1)
             {
-                //System.out.println(h);
-                //ccad[i] = cadena.charAt(i);
-                cadenaQuitados = cadenaQuitados + cadena.charAt(i);
+                cadenaQuitados = cadenaQuitados + tmpcad.charAt(i);
                 
             }
         }
@@ -121,7 +119,7 @@ public class Cadena extends java.lang.Object {
      */
     public static String llenarCon(char caracter, String numero, int tamanyoFinal, char AntesDespues)
     {
-        StringBuffer ceros = new StringBuffer();
+        StringBuilder ceros = new StringBuilder();
         
         
         for(int i = 0; i < (tamanyoFinal - numero.length()); i++)
@@ -130,10 +128,10 @@ public class Cadena extends java.lang.Object {
         }
         if (AntesDespues == 'D')
         {
-            ceros.insert(0, numero.toString());
+            ceros.insert(0, numero);
         }else
         {
-            ceros.append(numero.toString());
+            ceros.append(numero);
         }
         return ceros.toString();
     }

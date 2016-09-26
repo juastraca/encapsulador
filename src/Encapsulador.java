@@ -20,12 +20,10 @@ public class Encapsulador extends javax.swing.JFrame {
     /**
      * Creates new form Encapsulador
      */
-    Connection conn = null;
+    private Connection conn; 
     private final char COMA = ',';
-    /**
-     * has
-     */
-    Hashtable conversion = new Hashtable();
+    
+    private HashMap<String, String> conversion = new HashMap<>();
 
     public Encapsulador() {
         initComponents();
@@ -283,12 +281,9 @@ public class Encapsulador extends javax.swing.JFrame {
         javax.swing.JScrollPane scr = new javax.swing.JScrollPane(text);
         ayuda.getContentPane().setLayout(null);
 
-	    //ayuda.getContentPane().add(text);
-	    //scr.setViewportView(text);
-        //ayuda.getContentPane().add(scr);
         scr.setBounds(10, 10, 400, 300);
         ayuda.setContentPane(scr);
-        //scr.add(text);
+
         text.setText(this.abreFicheroConfiguracion(System.getProperty("user.dir") + "\\ayu.txt"));
         ayuda.pack();
         ayuda.show();
@@ -327,12 +322,10 @@ public class Encapsulador extends javax.swing.JFrame {
 
   private void btncadenaclic(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btncadenaclic
 
-      Cadena cadena = new Cadena();
-
       String saux = txtconsulta.getText();
       txtconsulta.setText(" ");
 
-      this.txtconsulta.setText(cadena.normalizarCadena(saux));
+      this.txtconsulta.setText(Cadena.normalizarCadena(saux));
 
 
   }//GEN-LAST:event_btncadenaclic
@@ -398,7 +391,7 @@ public class Encapsulador extends javax.swing.JFrame {
             String nombreColumna = rsmd.getColumnName(i);
 
             String tipoColumna = rsmd.getColumnTypeName(i);
-            if (this.chktipo.isSelected() == false) {
+            if (!this.chktipo.isSelected()) {
                 try {
                     if (!this.chkConversionInterna.isSelected()) {
                         //tipoColumna = rs.getObject(nombreColumna).getClass().getName();
@@ -649,7 +642,7 @@ public class Encapsulador extends javax.swing.JFrame {
         String linea = "";
         String retorno = null;
         String stError = "Fichero de configuracion no disponible o ruta incorrecta";
-        //Vector stvRecurso = new Vector();
+        
         StringBuffer arch = new StringBuffer();
         final String INDICA_COMENTARIO = "/*";
 
@@ -677,7 +670,7 @@ public class Encapsulador extends javax.swing.JFrame {
             stError = "\nException " + e + stError;
 
         } finally {
-            if (!stError.equals("")) {
+            if (!"".equals(stError)) {
                 this.status.setText(stError);
             }
             return retorno;
@@ -686,8 +679,8 @@ public class Encapsulador extends javax.swing.JFrame {
 
     private void cargarConfiguracion(String contenidoArchivo) {
         if (contenidoArchivo != null) {
-            contenidoArchivo = Cadena.normalizarCadena(contenidoArchivo);
-            StringTokenizer st = new StringTokenizer(contenidoArchivo, ",");
+            String contenidoNormalizado = Cadena.normalizarCadena(contenidoArchivo);
+            StringTokenizer st = new StringTokenizer(contenidoNormalizado, ",");
             for (int i = 0; i <= st.countTokens(); i++) {
 
                 String nombreSQL = st.nextToken();
