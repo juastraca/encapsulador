@@ -14,6 +14,7 @@ import java.awt.FileDialog;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class Encapsulador extends javax.swing.JFrame {
 
@@ -22,8 +23,11 @@ public class Encapsulador extends javax.swing.JFrame {
      */
     private Connection conn; 
     private static final char COMA = ',';
-    
+    private static final Logger log = Logger.getLogger(Encapsulador.class.getCanonicalName());
     private HashMap<String, String> conversion = new HashMap<>();
+    
+    
+    
 
     public Encapsulador() {
         initComponents();
@@ -31,7 +35,12 @@ public class Encapsulador extends javax.swing.JFrame {
 
         System.out.println(System.getProperty("user.dir"));
         loadConfig(System.getProperty("user.dir"));
+        try{
         cargarConfiguracion(this.abreFicheroConfiguracion(System.getProperty("user.dir") + "\\conv.txt"));
+        }catch(Exception e){
+            status.setText("Error cargando fichero de conversion de tipos (conv.txt");
+            this.chkConversionInterna.setEnabled(false);
+        }
     }
 
     /**
@@ -66,20 +75,14 @@ public class Encapsulador extends javax.swing.JFrame {
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
-        editMenu = new javax.swing.JMenu();
-        cutMenuItem = new javax.swing.JMenuItem();
-        copyMenuItem = new javax.swing.JMenuItem();
-        pasteMenuItem = new javax.swing.JMenuItem();
-        deleteMenuItem = new javax.swing.JMenuItem();
-        helpMenu = new javax.swing.JMenu();
-        aboutMenuItem = new javax.swing.JMenuItem();
         optMenu = new javax.swing.JMenu();
         chkFicherito = new javax.swing.JCheckBoxMenuItem();
-        chkConversionExacta = new javax.swing.JCheckBoxMenuItem();
         claseMenu = new javax.swing.JMenu();
         chktipo = new javax.swing.JCheckBoxMenuItem();
         chkConversionInterna = new javax.swing.JCheckBoxMenuItem();
         chkCodigodeConexion = new javax.swing.JCheckBoxMenuItem();
+        helpMenu = new javax.swing.JMenu();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         setTitle("Encapsulador");
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -167,7 +170,7 @@ public class Encapsulador extends javax.swing.JFrame {
         getContentPane().add(btncadena);
         btncadena.setBounds(20, 350, 150, 20);
         getContentPane().add(status);
-        status.setBounds(180, 350, 410, 50);
+        status.setBounds(180, 350, 370, 50);
 
         txtNombreClase.setText("PonElNombre");
         getContentPane().add(txtNombreClase);
@@ -208,43 +211,11 @@ public class Encapsulador extends javax.swing.JFrame {
 
         menuBar.add(fileMenu);
 
-        editMenu.setText("Edición");
-
-        cutMenuItem.setText("Cortar");
-        editMenu.add(cutMenuItem);
-
-        copyMenuItem.setText("Copiar");
-        editMenu.add(copyMenuItem);
-
-        pasteMenuItem.setText("Pegar");
-        editMenu.add(pasteMenuItem);
-
-        deleteMenuItem.setText("Borrar");
-        editMenu.add(deleteMenuItem);
-
-        menuBar.add(editMenu);
-
-        helpMenu.setText("Ayuda");
-
-        aboutMenuItem.setText("About");
-        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                aboutMenuItemActionPerformed(evt);
-            }
-        });
-        helpMenu.add(aboutMenuItem);
-
-        menuBar.add(helpMenu);
-
         optMenu.setText("Opciones");
 
         chkFicherito.setText("Generar clase a partir de texto");
         chkFicherito.setToolTipText("Poner campo,tipo en el panel SQL/Texto");
         optMenu.add(chkFicherito);
-
-        chkConversionExacta.setText("Emplear conversion Exacta de tipos");
-        chkConversionExacta.setToolTipText("Emplea los tipos del fichero de configuracion");
-        optMenu.add(chkConversionExacta);
 
         menuBar.add(optMenu);
 
@@ -268,6 +239,18 @@ public class Encapsulador extends javax.swing.JFrame {
         claseMenu.add(chkCodigodeConexion);
 
         menuBar.add(claseMenu);
+
+        helpMenu.setText("Ayuda");
+
+        aboutMenuItem.setText("About");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        helpMenu.add(aboutMenuItem);
+
+        menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
 
@@ -370,55 +353,30 @@ public class Encapsulador extends javax.swing.JFrame {
 
     private void crearClase(ResultSet rs) throws Exception {
 
-       ResultSetMetaData rsmd;
+       nombres = new ArrayList<>();
+       tipos = new ArrayList<>();
+       columnas = new ArrayList<>();
+       
+       StringBuilder salida = new StringBuilder();
+       
+       ResultSetMetaData rsmd = rs.getMetaData();
+           
+       StringBuilder mapeo = new StringBuilder("HashMap<String, String> columToProp = new HashMap<String, String>();\n");
+       StringBuilder toString = new StringBuilder("StringBuffer toStr = new StringBuffer();\n");
 
-        //TODO: Cambiar a arraylist, esto es de hace mil años...
-        Vector nombres = new Vector();
-        Vector tipos = new Vector();
-        rsmd = rs.getMetaData();
-        Vector tiposJava = new Vector();
-        ArrayList<String> columnas = new ArrayList<>();
-
-        StringBuffer salida = new StringBuffer();
-        StringBuffer mapeo = new StringBuffer("HashMap<String, String> columToProp = new HashMap<String, String>();\n");
-        StringBuffer toString = new StringBuffer("StringBuffer toStr = new StringBuffer();\n");
-
-        salida.append("public class " + this.txtNombreClase.getText() + " { \n");
-
-        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-
-            String nombreColumna = rsmd.getColumnName(i);
-
-            String tipoColumna = rsmd.getColumnTypeName(i);
-            if (!this.chktipo.isSelected()) { //todos como String
-                try {
-                    if (!this.chkConversionInterna.isSelected()) {
-                        
-                        tipoColumna = rsmd.getColumnClassName(i);
-                        tipoColumna = tipoColumna.substring(tipoColumna.lastIndexOf('.') + 1);
-                    } else {
-                        tipoColumna = convertirDatoJava(tipoColumna);
-                    }
-                } catch (Exception rara) {
-                    tipoColumna = convertirDatoJava(tipoColumna);
-                }
-            } else {
-                tipoColumna = "String";
-            }
-
-            nombres.add(convertirNombreColumna(nombreColumna));
-            columnas.add(nombreColumna);
-            tipos.add(tipoColumna);
-        }
-
+        
+        prepareData(rsmd);
+        
+        //crea la definicion de campos, metodo mapeo y toString
+        salida.append("public class ").append(this.txtNombreClase.getText()).append(" { \n");
         for (int i = 0; i < nombres.size(); i++) {
             salida.append("@Column(name=\"");
             salida.append(columnas.get(i))
                     .append("\")\n");
             salida.append("private ");
-            salida.append(tipos.elementAt(i));
+            salida.append(tipos.get(i));
             salida.append(' ');
-            salida.append(nombres.elementAt(i).toString());
+            salida.append(nombres.get(i).toString());
             salida.append(";");
             salida.append('\n');
 
@@ -426,42 +384,43 @@ public class Encapsulador extends javax.swing.JFrame {
                     .append(columnas.get(i))
                     .append("\", ");
             mapeo.append("\"")
-                    .append(nombres.elementAt(i).toString())
+                    .append(nombres.get(i).toString())
                     .append("\");\n");
             toString.append("toStr.append(");
-            toString.append(nombres.elementAt(i).toString());
+            toString.append(nombres.get(i).toString());
             toString.append(");\n");
             toString.append("toStr.append('");
             toString.append(COMA);
             toString.append("');\n");
 
         }
-
+        // crea getters y setters
         for (int i = 0; i < nombres.size(); i++) {
 
-            String nombreFuncionGet = "public " + tipos.elementAt(i).toString() + " get" + nombres.elementAt(i).toString().substring(0, 1).toUpperCase() + nombres.elementAt(i).toString().substring(1) + "()";
-            String nombreFuncionSet = "public void set" + nombres.elementAt(i).toString().substring(0, 1).toUpperCase() + nombres.elementAt(i).toString().substring(1) + "(" + tipos.elementAt(i).toString() + " valor)";
+            String nombreFuncionGet = "public " + tipos.get(i).toString() + " get" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "()";
+            String nombreFuncionSet = "public void set" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "(" + tipos.get(i).toString() + " valor)";
             salida.append("/**\n")
                     .append("* devuelve ")
-                    .append(nombres.elementAt(i))
+                    .append(nombres.get(i))
                     .append(".\n* @return ")
-                    .append(nombres.elementAt(i))
+                    .append(nombres.get(i))
                     .append("\n*/\n");
 
             salida.append(nombreFuncionGet);
-            salida.append("{\n\t return " + nombres.elementAt(i).toString() + ";\n}");
+            salida.append("{\n\t return " + nombres.get(i).toString() + ";\n}");
 
             salida.append('\n');
             salida.append("/**\n")
                     .append("* establece el valor de ")
-                    .append(nombres.elementAt(i))
+                    .append(nombres.get(i))
                     .append(".\n *@param valor nuevo valor")
                     .append("\n*/\n");
             salida.append(nombreFuncionSet);
             salida.append("{\n\t");
-            salida.append(nombres.elementAt(i).toString() + " = valor;\n}\n");
+            salida.append(nombres.get(i)).append(" = valor;\n}\n");
 
         }
+        //genera código de conexion
         if (this.chkCodigodeConexion.isSelected()) {
 
             salida = generarCodigodeConexion(salida, nombres, tipos);
@@ -484,6 +443,44 @@ public class Encapsulador extends javax.swing.JFrame {
 
         this.txtsalida.setText(salida.toString());
 
+    }
+
+    private void prepareData(ResultSetMetaData rsmd) throws SQLException {
+        //prepara datos
+        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+            
+            String nombreColumna = rsmd.getColumnName(i);
+            
+            String tipoColumna = rsmd.getColumnTypeName(i);
+            log.finest(tipoColumna);
+            if (!this.chktipo.isSelected()) { //todos como String
+                try {
+                    if (!this.chkConversionInterna.isSelected()) {
+                        
+                        tipoColumna = getTipoColumnaFromMetadata(tipoColumna, rsmd, i);
+                    } else {
+                        tipoColumna = convertirDatoJava(tipoColumna);
+                        if(tipoColumna == null){
+                            tipoColumna = getTipoColumnaFromMetadata(tipoColumna, rsmd, i);
+                        }
+                    }
+                } catch (Exception rara) {
+                    tipoColumna = convertirDatoJava(tipoColumna);
+                }
+            } else {
+                tipoColumna = "String";
+            }
+            
+            nombres.add(convertirNombreColumna(nombreColumna));
+            columnas.add(nombreColumna);
+            tipos.add(tipoColumna);
+        }
+    }
+
+    private String getTipoColumnaFromMetadata(String tipoColumna, ResultSetMetaData rsmd, int i) throws SQLException {
+        tipoColumna = rsmd.getColumnClassName(i);
+        tipoColumna = tipoColumna.substring(tipoColumna.lastIndexOf('.') + 1);
+        return tipoColumna;
     }
 
     private void crearClase() {
@@ -543,28 +540,15 @@ public class Encapsulador extends javax.swing.JFrame {
     }
 
     private String convertirDatoJava(String tipoDato) {
-        if (this.chkConversionExacta.isSelected()) { //emplea fichro de configuracion
+        String result = null;
             if (this.conversion.get(tipoDato) != null) {
-                tipoDato = (String) this.conversion.get(tipoDato);
+                result = (String) this.conversion.get(tipoDato);
             }
             else{
-                tipoDato = "String";
+                result = null;
             }
 
-        }
-        if (tipoDato.indexOf("NUMBER") > -1) {
-            tipoDato = "Integer";
-
-        }
-        if (tipoDato.indexOf("VARCHAR") > -1) {
-            tipoDato = "String";
-        }
-
-        if (tipoDato.indexOf("DATE") > -1) {
-            tipoDato = "Date";
-        }
-
-        return tipoDato;
+        return result;
 
     }
 
@@ -572,7 +556,8 @@ public class Encapsulador extends javax.swing.JFrame {
 
         ResultSet rs = null;
         try {
-            Statement st = conn.createStatement();
+            Statement st = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            st.setMaxRows(1);
             rs = st.executeQuery(this.txtconsulta.getText());
         } catch (Exception e) {
             System.out.println(e.toString());
@@ -636,11 +621,11 @@ public class Encapsulador extends javax.swing.JFrame {
     }
 
     private String abreFicheroConfiguracion(String archivo) {
-        String linea = "";
+        String linea;
         String retorno = null;
         String stError = "Fichero de configuracion no disponible o ruta incorrecta";
         
-        StringBuffer arch = new StringBuffer();
+        StringBuilder arch = new StringBuilder();
         final String INDICA_COMENTARIO = "/*";
 
         try {
@@ -653,7 +638,7 @@ public class Encapsulador extends javax.swing.JFrame {
                     linea = linea.trim();
                     if ((linea.length() > 0) && !linea.startsWith(INDICA_COMENTARIO)) {
                         {
-                            arch.append(linea + '\n');
+                            arch.append(linea).append('\n');
                         }
                     } // if linea con datos
                 } // Fin fichero
@@ -675,31 +660,34 @@ public class Encapsulador extends javax.swing.JFrame {
     }
 
     private void cargarConfiguracion(String contenidoArchivo) {
+       
         if (contenidoArchivo != null) {
             String contenidoNormalizado = Cadena.normalizarCadena(contenidoArchivo);
-            StringTokenizer st = new StringTokenizer(contenidoNormalizado, ",");
-            for (int i = 0; i <= st.countTokens(); i++) {
+            String[] tokens = contenidoNormalizado.split(",");
+            int max = tokens.length;
+            for (int i = 0; i < max; i++) {
 
-                String nombreSQL = st.nextToken();
-                String nombreJava = st.nextToken();
+                String nombreSQL = tokens[i];
+                i++;
+                String nombreJava = tokens[i];
                 this.conversion.put(nombreSQL, nombreJava);
             }
         } else {
-            this.chkConversionExacta.setEnabled(false);
+            this.chkConversionInterna.setEnabled(false);
         }
     }
 
-    private StringBuffer generarCodigodeConexion(StringBuffer sb,
-            Vector nombres, Vector tipos) {
+    private StringBuilder generarCodigodeConexion(StringBuilder sb,
+            List<String> nombres, List<String> tipos) {
         sb.append("public void conectarDatos(java.sql.ResultSet rs){\n");
         sb.append("try{");
         //sb.append("    if(rs.next()){\n");
 
         for (int i = 0; i < nombres.size(); i++) {
-            sb.append("        ").append(nombres.elementAt(i).toString().toLowerCase());
-            sb.append(" = (rs.getObject(\"").append(nombres.elementAt(i).toString()).append("\")!=null) ? (")
-                    .append(tipos.elementAt(i).toString()).append(") rs.getObject(\"")
-                    .append(nombres.elementAt(i).toString()).append("\")\n");
+            sb.append("        ").append(nombres.get(i).toLowerCase());
+            sb.append(" = (rs.getObject(\"").append(nombres.get(i)).append("\")!=null) ? (")
+                    .append(tipos.get(i)).append(") rs.getObject(\"")
+                    .append(nombres.get(i)).append("\")\n");
             sb.append(": null;\n");
 
         }
@@ -714,15 +702,10 @@ public class Encapsulador extends javax.swing.JFrame {
     private javax.swing.JButton btncadena;
     private javax.swing.JButton btnconectar;
     private javax.swing.JCheckBoxMenuItem chkCodigodeConexion;
-    private javax.swing.JCheckBoxMenuItem chkConversionExacta;
     private javax.swing.JCheckBoxMenuItem chkConversionInterna;
     private javax.swing.JCheckBoxMenuItem chkFicherito;
     private javax.swing.JCheckBoxMenuItem chktipo;
     private javax.swing.JMenu claseMenu;
-    private javax.swing.JMenuItem copyMenuItem;
-    private javax.swing.JMenuItem cutMenuItem;
-    private javax.swing.JMenuItem deleteMenuItem;
-    private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
@@ -737,7 +720,6 @@ public class Encapsulador extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu optMenu;
-    private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JLabel status;
@@ -750,7 +732,7 @@ public class Encapsulador extends javax.swing.JFrame {
     private javax.swing.JTextField txtusuario;
     // End of variables declaration//GEN-END:variables
 
-    private Object convertirNombreColumna(String cname) {
+    private String convertirNombreColumna(String cname) {
         cname = cname.toLowerCase();
         int lastIndex = 0;
         int index = 0;
@@ -758,7 +740,6 @@ public class Encapsulador extends javax.swing.JFrame {
             index = cname.indexOf("_");
             if (index >= 0) {
                 String tmp = cname.substring(0, index);
-                lastIndex = index;
                 lastIndex = index + 1;
                 String tail = cname.substring(lastIndex);
 
