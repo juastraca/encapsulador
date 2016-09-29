@@ -22,9 +22,10 @@ public class Encapsulador extends javax.swing.JFrame {
      * Creates new form Encapsulador
      */
     private Connection conn; 
-    private static final char COMA = ',';
+    
     private static final Logger log = Logger.getLogger(Encapsulador.class.getCanonicalName());
-    private HashMap<String, String> conversion = new HashMap<>();
+    private ClassGenerator cg = new BasicClassGenerator();
+    
     
     
     
@@ -353,98 +354,41 @@ public class Encapsulador extends javax.swing.JFrame {
 
     private void crearClase(ResultSet rs) throws Exception {
 
-       nombres = new ArrayList<>();
-       tipos = new ArrayList<>();
-       columnas = new ArrayList<>();
        
-       StringBuilder salida = new StringBuilder();
+       
+       
        
        ResultSetMetaData rsmd = rs.getMetaData();
+       ClassData cd = new ClassData(cg);
+       cd.reset();
+       cd.setRsmd(rsmd);
+       cd.setClassName(this.txtNombreClase.getText());
+       
+       if(this.chkConversionInterna.isSelected()){
+           cd.setGenerationMode(GenerationMode.INTERNAL);
+       }
+       else if(chktipo.isSelected()){
+           cd.setGenerationMode(GenerationMode.STRING);
+       }
+       else{
+           cd.setGenerationMode(GenerationMode.NORMAL);
+       }
+       
+       cd.prepareData();
            
-       StringBuilder mapeo = new StringBuilder("HashMap<String, String> columToProp = new HashMap<String, String>();\n");
-       StringBuilder toString = new StringBuilder("StringBuffer toStr = new StringBuffer();\n");
+      
 
         
-        prepareData(rsmd);
+       
         
-        //crea la definicion de campos, metodo mapeo y toString
-        salida.append("public class ").append(this.txtNombreClase.getText()).append(" { \n");
-        for (int i = 0; i < nombres.size(); i++) {
-            salida.append("@Column(name=\"");
-            salida.append(columnas.get(i))
-                    .append("\")\n");
-            salida.append("private ");
-            salida.append(tipos.get(i));
-            salida.append(' ');
-            salida.append(nombres.get(i).toString());
-            salida.append(";");
-            salida.append('\n');
+        
+      
+     
 
-            mapeo.append("columToProp.put(\"")
-                    .append(columnas.get(i))
-                    .append("\", ");
-            mapeo.append("\"")
-                    .append(nombres.get(i).toString())
-                    .append("\");\n");
-            toString.append("toStr.append(");
-            toString.append(nombres.get(i).toString());
-            toString.append(");\n");
-            toString.append("toStr.append('");
-            toString.append(COMA);
-            toString.append("');\n");
-
-        }
-        // crea getters y setters
-        for (int i = 0; i < nombres.size(); i++) {
-
-            String nombreFuncionGet = "public " + tipos.get(i).toString() + " get" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "()";
-            String nombreFuncionSet = "public void set" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "(" + tipos.get(i).toString() + " valor)";
-            salida.append("/**\n")
-                    .append("* devuelve ")
-                    .append(nombres.get(i))
-                    .append(".\n* @return ")
-                    .append(nombres.get(i))
-                    .append("\n*/\n");
-
-            salida.append(nombreFuncionGet);
-            salida.append("{\n\t return " + nombres.get(i).toString() + ";\n}");
-
-            salida.append('\n');
-            salida.append("/**\n")
-                    .append("* establece el valor de ")
-                    .append(nombres.get(i))
-                    .append(".\n *@param valor nuevo valor")
-                    .append("\n*/\n");
-            salida.append(nombreFuncionSet);
-            salida.append("{\n\t");
-            salida.append(nombres.get(i)).append(" = valor;\n}\n");
-
-        }
-        //genera código de conexion
-        if (this.chkCodigodeConexion.isSelected()) {
-
-            salida = generarCodigodeConexion(salida, nombres, tipos);
-        }
-
-        salida.append("\n/**\n").
-                append("* devuelve la realacion entre columnas y propiedades.\n")
-                .append("*\n")
-                .append("* @return Map con la relacion\n")
-                .append("*/\n");
-        salida.append("public static Map<String, String> getColumToProperty() {\n");
-        mapeo.append("\n return columToProp;\n");
-        salida.append(mapeo.toString());
-        salida.append("\n}");
-        salida.append("\n@Override\n");
-        salida.append("public String toString() {\n");
-        salida.append(toString.toString());
-        salida.append("\n return toStr.toString().replaceAll(\"null\", \"\");\n ");
-        salida.append("\n}\n}");
-
-        this.txtsalida.setText(salida.toString());
+        this.txtsalida.setText(cd.getText());
 
     }
-
+/**
     private void prepareData(ResultSetMetaData rsmd) throws SQLException {
         //prepara datos
         for (int i = 1; i <= rsmd.getColumnCount(); i++) {
@@ -476,12 +420,8 @@ public class Encapsulador extends javax.swing.JFrame {
             tipos.add(tipoColumna);
         }
     }
-
-    private String getTipoColumnaFromMetadata(String tipoColumna, ResultSetMetaData rsmd, int i) throws SQLException {
-        tipoColumna = rsmd.getColumnClassName(i);
-        tipoColumna = tipoColumna.substring(tipoColumna.lastIndexOf('.') + 1);
-        return tipoColumna;
-    }
+**/
+   
 
     private void crearClase() {
 
@@ -539,18 +479,7 @@ public class Encapsulador extends javax.swing.JFrame {
 
     }
 
-    private String convertirDatoJava(String tipoDato) {
-        String result = null;
-            if (this.conversion.get(tipoDato) != null) {
-                result = (String) this.conversion.get(tipoDato);
-            }
-            else{
-                result = null;
-            }
-
-        return result;
-
-    }
+   
 
     private void realizarConsulta(Connection conn) {
 
@@ -568,6 +497,7 @@ public class Encapsulador extends javax.swing.JFrame {
         } catch (Exception e) {
             System.out.println(e.toString());
             this.status.setText(e.toString());
+            e.printStackTrace();
         }
 
     }
@@ -670,33 +600,14 @@ public class Encapsulador extends javax.swing.JFrame {
                 String nombreSQL = tokens[i];
                 i++;
                 String nombreJava = tokens[i];
-                this.conversion.put(nombreSQL, nombreJava);
+                this.cg.getConversion().put(nombreSQL, nombreJava);
             }
         } else {
             this.chkConversionInterna.setEnabled(false);
         }
     }
 
-    private StringBuilder generarCodigodeConexion(StringBuilder sb,
-            List<String> nombres, List<String> tipos) {
-        sb.append("public void conectarDatos(java.sql.ResultSet rs){\n");
-        sb.append("try{");
-        //sb.append("    if(rs.next()){\n");
 
-        for (int i = 0; i < nombres.size(); i++) {
-            sb.append("        ").append(nombres.get(i).toLowerCase());
-            sb.append(" = (rs.getObject(\"").append(nombres.get(i)).append("\")!=null) ? (")
-                    .append(tipos.get(i)).append(") rs.getObject(\"")
-                    .append(nombres.get(i)).append("\")\n");
-            sb.append(": null;\n");
-
-        }
-        //sb.append("    }\n");
-        sb.append("}catch(Exception e){}\n");
-        sb.append("}");
-
-        return sb;
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton btncadena;
@@ -732,25 +643,7 @@ public class Encapsulador extends javax.swing.JFrame {
     private javax.swing.JTextField txtusuario;
     // End of variables declaration//GEN-END:variables
 
-    private String convertirNombreColumna(String cname) {
-        cname = cname.toLowerCase();
-        int lastIndex = 0;
-        int index = 0;
-        while (index >= 0) {
-            index = cname.indexOf("_");
-            if (index >= 0) {
-                String tmp = cname.substring(0, index);
-                lastIndex = index + 1;
-                String tail = cname.substring(lastIndex);
-
-                char first = Character.toUpperCase(tail.charAt(0));
-                tail = first + tail.substring(1);
-                cname = tmp + first + tail.substring(1);
-
-            }
-        }
-        return cname;
-    }
+  
 
     private void loadConfig(String dir) {
         Properties prop = new Properties();
