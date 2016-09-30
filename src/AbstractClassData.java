@@ -14,9 +14,9 @@ import java.util.HashMap;
  */
 public abstract class AbstractClassData implements ClassGenerator {
     
-    protected ArrayList<String> nombres;
-    protected ArrayList<String> tipos;
-    protected ArrayList<String> columnas;
+    protected ArrayList<String> nombreAtributosJava;
+    protected ArrayList<String> tipoAtributosJava;
+    protected ArrayList<String> nombreColumnasSql;
     
     protected StringBuilder salida = new StringBuilder();
     protected ClassGenerator generator;
@@ -33,63 +33,63 @@ public abstract class AbstractClassData implements ClassGenerator {
     }
     
     protected void reset(){
-        setNombres(new ArrayList<String>());
-        setTipos(new ArrayList<String>());
-        setColumnas(new ArrayList<String>());
+        setNombreAtributosJava(new ArrayList<String>());
+        setTipoAtributosJava(new ArrayList<String>());
+        setNombreColumnasSql(new ArrayList<String>());
        
         salida = new StringBuilder();
     }
     
     @Override
-    public HashMap<String, String> getConversion(){
-        return generator.getConversion();
+    public HashMap<String, String> getConversionTiposSqlToJava(){
+        return generator.getConversionTiposSqlToJava();
     }
 
     @Override
-    public String getText() {
+    public String getClassText() {
         return salida.toString();
     }
 
     /**
-     * @return the nombres
+     * @return the nombreAtributosJava
      */
-    public ArrayList<String> getNombres() {
-        return nombres;
+    public ArrayList<String> getNombreAtributosJava() {
+        return nombreAtributosJava;
     }
 
     /**
-     * @param nombres the nombres to set
+     * @param nombreAtributosJava the nombreAtributosJava to set
      */
-    public void setNombres(ArrayList<String> nombres) {
-        this.nombres = nombres;
+    public void setNombreAtributosJava(ArrayList<String> nombreAtributosJava) {
+        this.nombreAtributosJava = nombreAtributosJava;
     }
 
     /**
-     * @return the tipos
+     * @return the tipoAtributosJava
      */
-    public ArrayList<String> getTipos() {
-        return tipos;
+    public ArrayList<String> getTipoAtributosJava() {
+        return tipoAtributosJava;
     }
 
     /**
-     * @param tipos the tipos to set
+     * @param tipoAtributosJava the tipoAtributosJava to set
      */
-    public void setTipos(ArrayList<String> tipos) {
-        this.tipos = tipos;
+    public void setTipoAtributosJava(ArrayList<String> tipoAtributosJava) {
+        this.tipoAtributosJava = tipoAtributosJava;
     }
 
     /**
-     * @return the columnas
+     * @return the nombreColumnasSql
      */
-    public ArrayList<String> getColumnas() {
-        return columnas;
+    public ArrayList<String> getNombreColumnasSql() {
+        return nombreColumnasSql;
     }
 
     /**
-     * @param columnas the columnas to set
+     * @param nombreColumnasSql the nombreColumnasSql to set
      */
-    public void setColumnas(ArrayList<String> columnas) {
-        this.columnas = columnas;
+    public void setNombreColumnasSql(ArrayList<String> nombreColumnasSql) {
+        this.nombreColumnasSql = nombreColumnasSql;
     }
 
    

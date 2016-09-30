@@ -14,8 +14,8 @@ import java.util.HashMap;
 public interface ClassGenerator {
     
     public static final char COMA = ',';
-    public String getText();
+    public String getClassText();
     public void prepareData() throws Exception;
-    public HashMap<String, String> getConversion();
+    public HashMap<String, String> getConversionTiposSqlToJava();
     
 }

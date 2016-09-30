@@ -17,10 +17,10 @@ public class ClassData extends AbstractClassData {
 
     /**
      *
-     * @param c
+     * @param basicGenerator
      */
-    public ClassData(ClassGenerator c) {
-        super(c);
+    public ClassData(ClassGenerator basicGenerator) {
+        super(basicGenerator);
     }
 
     public ClassData() {
@@ -28,46 +28,42 @@ public class ClassData extends AbstractClassData {
     }
 
     @Override
-    public String getText() {
+    public String getClassText() {
         mapeo = new StringBuilder("HashMap<String, String> columToProp = new HashMap<String, String>();\n");
         toString = new StringBuilder("StringBuffer toStr = new StringBuffer();\n");
         createClassDefinitions();
 
         createClassMethods();
-//genera código de conexion
-        //FIXME:
-        //if (this.chkCodigodeConexion.isSelected()) {
-        //    salida = generarCodigodeConexion(salida, nombres, tipos);
-        //}
 
-        return super.getText();
+
+        return super.getClassText();
     }
 
     private void createClassMethods() {
         // crea getters y setters
-        for (int i = 0; i < nombres.size(); i++) {
+        for (int i = 0; i < nombreAtributosJava.size(); i++) {
 
-            String nombreFuncionGet = "public " + tipos.get(i) + " get" + nombres.get(i).substring(0, 1).toUpperCase() + nombres.get(i).substring(1) + "()";
-            String nombreFuncionSet = "public void set" + nombres.get(i).substring(0, 1).toUpperCase() + nombres.get(i).substring(1) + "(" + tipos.get(i) + " valor)";
+            String nombreFuncionGet = "public " + tipoAtributosJava.get(i) + " get" + nombreAtributosJava.get(i).substring(0, 1).toUpperCase() + nombreAtributosJava.get(i).substring(1) + "()";
+            String nombreFuncionSet = "public void set" + nombreAtributosJava.get(i).substring(0, 1).toUpperCase() + nombreAtributosJava.get(i).substring(1) + "(" + tipoAtributosJava.get(i) + " valor)";
             salida.append("/**\n")
                     .append("* devuelve ")
-                    .append(nombres.get(i))
+                    .append(nombreAtributosJava.get(i))
                     .append(".\n* @return ")
-                    .append(nombres.get(i))
+                    .append(nombreAtributosJava.get(i))
                     .append("\n*/\n");
 
             salida.append(nombreFuncionGet);
-            salida.append("{\n\t return ").append(nombres.get(i)).append(";\n}");
+            salida.append("{\n\t return ").append(nombreAtributosJava.get(i)).append(";\n}");
 
             salida.append('\n');
             salida.append("/**\n")
                     .append("* establece el valor de ")
-                    .append(nombres.get(i))
+                    .append(nombreAtributosJava.get(i))
                     .append(".\n *@param valor nuevo valor")
                     .append("\n*/\n");
             salida.append(nombreFuncionSet);
             salida.append("{\n\t");
-            salida.append(nombres.get(i)).append(" = valor;\n}\n");
+            salida.append(nombreAtributosJava.get(i)).append(" = valor;\n}\n");
 
         }
 
@@ -91,25 +87,25 @@ public class ClassData extends AbstractClassData {
     private void createClassDefinitions() {
         //crea la definicion de campos, metodo mapeo y toString
         salida.append("public class ").append(getClassName()).append(" { \n");
-        for (int i = 0; i < nombres.size(); i++) {
+        for (int i = 0; i < nombreAtributosJava.size(); i++) {
             salida.append("@Column(name=\"");
-            salida.append(columnas.get(i))
+            salida.append(nombreColumnasSql.get(i))
                     .append("\")\n");
             salida.append("private ");
-            salida.append(tipos.get(i));
+            salida.append(tipoAtributosJava.get(i));
             salida.append(' ');
-            salida.append(nombres.get(i));
+            salida.append(nombreAtributosJava.get(i));
             salida.append(";");
             salida.append('\n');
 
             mapeo.append("columToProp.put(\"")
-                    .append(columnas.get(i))
+                    .append(nombreColumnasSql.get(i))
                     .append("\", ");
             mapeo.append("\"")
-                    .append(nombres.get(i))
+                    .append(nombreAtributosJava.get(i))
                     .append("\");\n");
             toString.append("toStr.append(");
-            toString.append(nombres.get(i));
+            toString.append(nombreAtributosJava.get(i));
             toString.append(");\n");
             toString.append("toStr.append('");
             toString.append(COMA);
@@ -121,8 +117,8 @@ public class ClassData extends AbstractClassData {
     private String convertirDatoJava(String tipoDato) {
         String result = null;
 
-        if (this.getConversion().get(tipoDato) != null) {
-            result = (String) this.getConversion().get(tipoDato);
+        if (this.getConversionTiposSqlToJava().get(tipoDato) != null) {
+            result = (String) this.getConversionTiposSqlToJava().get(tipoDato);
         }
         return result;
 
@@ -186,9 +182,9 @@ public class ClassData extends AbstractClassData {
                 tipoColumna = convertirDatoJava(tipoColumna);
             }
 
-            getNombres().add(convertirNombreColumna(nombreColumna));
-            getColumnas().add(nombreColumna);
-            getTipos().add(tipoColumna);
+            getNombreAtributosJava().add(convertirNombreColumna(nombreColumna));
+            getNombreColumnasSql().add(nombreColumna);
+            getTipoAtributosJava().add(tipoColumna);
         }
     }
 

@@ -24,7 +24,7 @@ public class Encapsulador extends javax.swing.JFrame {
     private Connection conn; 
     
     private static final Logger log = Logger.getLogger(Encapsulador.class.getCanonicalName());
-    private ClassGenerator cg = new BasicClassGenerator();
+    private ClassGenerator basicGenerator = new BasicClassGenerator();
     
     
     
@@ -35,9 +35,9 @@ public class Encapsulador extends javax.swing.JFrame {
         this.setBounds(10, 10, 800, 500);
 
         System.out.println(System.getProperty("user.dir"));
-        loadConfig(System.getProperty("user.dir"));
+        loadDatabaseConfig(System.getProperty("user.dir"));
         try{
-        cargarConfiguracion(this.abreFicheroConfiguracion(System.getProperty("user.dir") + "\\conv.txt"));
+        cargarConfiguracionSqlToJava(this.abreFicheroConfiguracion(System.getProperty("user.dir") + "\\conv.txt"));
         }catch(Exception e){
             status.setText("Error cargando fichero de conversion de tipos (conv.txt");
             this.chkConversionInterna.setEnabled(false);
@@ -353,74 +353,31 @@ public class Encapsulador extends javax.swing.JFrame {
     }
 
     private void crearClase(ResultSet rs) throws Exception {
-
-       
-       
-       
        
        ResultSetMetaData rsmd = rs.getMetaData();
-       ClassData cd = new ClassData(cg);
-       cd.reset();
-       cd.setRsmd(rsmd);
-       cd.setClassName(this.txtNombreClase.getText());
-       
-       if(this.chkConversionInterna.isSelected()){
-           cd.setGenerationMode(GenerationMode.INTERNAL);
-       }
-       else if(chktipo.isSelected()){
-           cd.setGenerationMode(GenerationMode.STRING);
-       }
-       else{
-           cd.setGenerationMode(GenerationMode.NORMAL);
-       }
-       
-       cd.prepareData();
-           
-      
-
-        
-       
-        
-        
-      
-     
-
-        this.txtsalida.setText(cd.getText());
+       ClassData cd = ConfigureClassGenerator(rsmd);
+        this.txtsalida.setText(cd.getClassText());
 
     }
-/**
-    private void prepareData(ResultSetMetaData rsmd) throws SQLException {
-        //prepara datos
-        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-            
-            String nombreColumna = rsmd.getColumnName(i);
-            
-            String tipoColumna = rsmd.getColumnTypeName(i);
-            log.finest(tipoColumna);
-            if (!this.chktipo.isSelected()) { //todos como String
-                try {
-                    if (!this.chkConversionInterna.isSelected()) {
-                        
-                        tipoColumna = getTipoColumnaFromMetadata(tipoColumna, rsmd, i);
-                    } else {
-                        tipoColumna = convertirDatoJava(tipoColumna);
-                        if(tipoColumna == null){
-                            tipoColumna = getTipoColumnaFromMetadata(tipoColumna, rsmd, i);
-                        }
-                    }
-                } catch (Exception rara) {
-                    tipoColumna = convertirDatoJava(tipoColumna);
-                }
-            } else {
-                tipoColumna = "String";
-            }
-            
-            nombres.add(convertirNombreColumna(nombreColumna));
-            columnas.add(nombreColumna);
-            tipos.add(tipoColumna);
+
+
+    private ClassData ConfigureClassGenerator(ResultSetMetaData rsmd) throws Exception {
+        ClassData cd = new ClassData(basicGenerator);
+        cd.reset();
+        cd.setRsmd(rsmd);
+        cd.setClassName(this.txtNombreClase.getText());
+        if(this.chkConversionInterna.isSelected()){
+            cd.setGenerationMode(GenerationMode.INTERNAL);
         }
+        else if(chktipo.isSelected()){
+            cd.setGenerationMode(GenerationMode.STRING);
+        }
+        else{
+            cd.setGenerationMode(GenerationMode.NORMAL);
+        }cd.prepareData();
+        return cd;
     }
-**/
+
    
 
     private void crearClase() {
@@ -428,11 +385,8 @@ public class Encapsulador extends javax.swing.JFrame {
         ArrayList<String> nombres = new ArrayList<>();
         ArrayList<String> tiposJava = new ArrayList<>();
         
-
         StringBuilder salida = new StringBuilder();
         salida.append("public class ").append(this.txtNombreClase.getText()).append(" { \n");
-       
-
         StringTokenizer st = new StringTokenizer(this.txtconsulta.getText(), ",");
 
         for (int i = 0; i <= st.countTokens(); i++) {
@@ -464,7 +418,6 @@ public class Encapsulador extends javax.swing.JFrame {
             String nombreFuncionSet = "public final void set" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "(" + tiposJava.get(i).toString() + " valor )";
             salida.append(nombreFuncionGet);
             salida.append("{\n return " + nombres.get(i).toString().toLowerCase() + ";\n}");
-
             salida.append('\n');
             salida.append(nombreFuncionSet);
             salida.append("{\n");
@@ -511,11 +464,11 @@ public class Encapsulador extends javax.swing.JFrame {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             File f = new File(filename);
             try {
-                FileWriter fw = new FileWriter(f);
-                String text = txtsalida.getText();
-                int textsize = text.length();
-                fw.write(txtsalida.getText(), 0, textsize);
-                fw.close();
+                try (FileWriter fw = new FileWriter(f)) {
+                    String text = txtsalida.getText();
+                    int textsize = text.length();
+                    fw.write(txtsalida.getText(), 0, textsize);
+                }
                 status.setText("Guardado: " + filename);
             } catch (IOException exc) {
                 status.setText("IOException: " + filename);
@@ -560,8 +513,8 @@ public class Encapsulador extends javax.swing.JFrame {
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(archivo));
-
             File fichero = new File(archivo);
+            
             if (fichero.exists()) {
                 while ((linea = br.readLine()) != null) {
                     stError = "";
@@ -573,7 +526,6 @@ public class Encapsulador extends javax.swing.JFrame {
                     } // if linea con datos
                 } // Fin fichero
                 retorno = arch.toString();
-
                 br.close();
 
             }
@@ -589,7 +541,7 @@ public class Encapsulador extends javax.swing.JFrame {
         }
     }
 
-    private void cargarConfiguracion(String contenidoArchivo) {
+    private void cargarConfiguracionSqlToJava(String contenidoArchivo) {
        
         if (contenidoArchivo != null) {
             String contenidoNormalizado = Cadena.normalizarCadena(contenidoArchivo);
@@ -600,7 +552,7 @@ public class Encapsulador extends javax.swing.JFrame {
                 String nombreSQL = tokens[i];
                 i++;
                 String nombreJava = tokens[i];
-                this.cg.getConversion().put(nombreSQL, nombreJava);
+                this.basicGenerator.getConversionTiposSqlToJava().put(nombreSQL, nombreJava);
             }
         } else {
             this.chkConversionInterna.setEnabled(false);
@@ -645,7 +597,7 @@ public class Encapsulador extends javax.swing.JFrame {
 
   
 
-    private void loadConfig(String dir) {
+    private void loadDatabaseConfig(String dir) {
         Properties prop = new Properties();
         InputStream input = null;
 

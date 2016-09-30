@@ -13,10 +13,10 @@ import java.util.HashMap;
  */
 public class BasicClassGenerator implements ClassGenerator{
     
-    private HashMap<String, String> conversion = new HashMap<>();
+    private HashMap<String, String> conversionTiposSqlToJava = new HashMap<>();
 
     @Override
-    public String getText() {
+    public String getClassText() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -29,15 +29,15 @@ public class BasicClassGenerator implements ClassGenerator{
      * @return the conversion
      */
     @Override
-    public HashMap<String, String> getConversion() {
-        return conversion;
+    public HashMap<String, String> getConversionTiposSqlToJava() {
+        return conversionTiposSqlToJava;
     }
 
     /**
-     * @param conversion the conversion to set
+     * @param conversionTiposSqlToJava the conversion to set
      */
-    public void setConversion(HashMap<String, String> conversion) {
-        this.conversion = conversion;
+    public void setConversionTiposSqlToJava(HashMap<String, String> conversionTiposSqlToJava) {
+        this.conversionTiposSqlToJava = conversionTiposSqlToJava;
     }
     
 }
