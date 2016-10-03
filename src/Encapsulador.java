@@ -35,7 +35,7 @@ public class Encapsulador extends javax.swing.JFrame {
         this.setBounds(10, 10, 800, 500);
 
         System.out.println(System.getProperty("user.dir"));
-        loadDatabaseConfig(System.getProperty("user.dir"));
+        loadDatabaseConnProps(System.getProperty("user.dir"));
         try{
         cargarConfiguracionSqlToJava(this.abreFicheroConfiguracion(System.getProperty("user.dir") + "\\conv.txt"));
         }catch(Exception e){
@@ -81,7 +81,6 @@ public class Encapsulador extends javax.swing.JFrame {
         claseMenu = new javax.swing.JMenu();
         chktipo = new javax.swing.JCheckBoxMenuItem();
         chkConversionInterna = new javax.swing.JCheckBoxMenuItem();
-        chkCodigodeConexion = new javax.swing.JCheckBoxMenuItem();
         helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
 
@@ -235,10 +234,6 @@ public class Encapsulador extends javax.swing.JFrame {
         chkConversionInterna.setToolTipText("No emplear los tipos java devueltos por la base de datos");
         claseMenu.add(chkConversionInterna);
 
-        chkCodigodeConexion.setText("Generar codigo de conexión");
-        chkCodigodeConexion.setToolTipText("Te genera gratis el codigo para poner valores a los campos");
-        claseMenu.add(chkCodigodeConexion);
-
         menuBar.add(claseMenu);
 
         helpMenu.setText("Ayuda");
@@ -283,12 +278,13 @@ public class Encapsulador extends javax.swing.JFrame {
   }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
   private void btnconectarclic(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnconectarclic
-      if (this.chkFicherito.isSelected()) {
+    
+
+      try {
+            if (this.chkFicherito.isSelected()) {
           crearClase();
           return;
       }
-
-      try {
           Class.forName(this.txtcontrolador.getText());
 
           conn = java.sql.DriverManager.getConnection(this.txturl.getText(),
@@ -297,6 +293,7 @@ public class Encapsulador extends javax.swing.JFrame {
           realizarConsulta(conn);
           cerrar();
       } catch (Exception e) {
+          e.printStackTrace();
           System.out.println(e.toString());
           this.status.setText(e.toString());
       }
@@ -380,55 +377,13 @@ public class Encapsulador extends javax.swing.JFrame {
 
    
 
-    private void crearClase() {
-
-        ArrayList<String> nombres = new ArrayList<>();
-        ArrayList<String> tiposJava = new ArrayList<>();
+    private void crearClase() throws Exception {
         
-        StringBuilder salida = new StringBuilder();
-        salida.append("public class ").append(this.txtNombreClase.getText()).append(" { \n");
-        StringTokenizer st = new StringTokenizer(this.txtconsulta.getText(), ",");
-
-        for (int i = 0; i <= st.countTokens(); i++) {
-
-            String nombreColumna = st.nextToken();
-            String tipoColumna = st.nextToken();
-            if (this.chktipo.isSelected()) {
-
-                tipoColumna = "String";
-            }
-
-            nombres.add(nombreColumna);
-            tiposJava.add(tipoColumna);
-        }
-
-        for (int i = 0; i < nombres.size(); i++) {
-            salida.append("private");
-            salida.append(tiposJava.get(i));
-            salida.append(' ');
-            salida.append(nombres.get(i).toLowerCase());
-            salida.append(" = null;");
-            salida.append('\n');
-
-        }
-
-        for (int i = 0; i < nombres.size(); i++) {
-	
-            String nombreFuncionGet = "public final " + tiposJava.get(i).toString() + " get" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "()";
-            String nombreFuncionSet = "public final void set" + nombres.get(i).toString().substring(0, 1).toUpperCase() + nombres.get(i).toString().substring(1) + "(" + tiposJava.get(i).toString() + " valor )";
-            salida.append(nombreFuncionGet);
-            salida.append("{\n return " + nombres.get(i).toString().toLowerCase() + ";\n}");
-            salida.append('\n');
-            salida.append(nombreFuncionSet);
-            salida.append("{\n");
-            salida.append(nombres.get(i).toString() + " = valor;\n}\n");
-
-        }
-
-        salida.append("\n}");
-        salida.append("// para superclase del bean\n");
-
-        this.txtsalida.setText(salida.toString());
+        PairValueGenerator generator = new PairValueGenerator(basicGenerator);
+        generator.setTokenizedRawData(this.txtconsulta.getText());
+        generator.prepareData();
+        generator.setClassName(this.txtNombreClase.getText());
+        this.txtsalida.setText(generator.getClassText());
 
     }
 
@@ -564,7 +519,6 @@ public class Encapsulador extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton btncadena;
     private javax.swing.JButton btnconectar;
-    private javax.swing.JCheckBoxMenuItem chkCodigodeConexion;
     private javax.swing.JCheckBoxMenuItem chkConversionInterna;
     private javax.swing.JCheckBoxMenuItem chkFicherito;
     private javax.swing.JCheckBoxMenuItem chktipo;
@@ -597,7 +551,7 @@ public class Encapsulador extends javax.swing.JFrame {
 
   
 
-    private void loadDatabaseConfig(String dir) {
+    private void loadDatabaseConnProps(String dir) {
         Properties prop = new Properties();
         InputStream input = null;
 

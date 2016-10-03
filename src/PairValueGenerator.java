@@ -8,12 +8,18 @@
  *
  * @author Enrique
  */
-public class PairValueClass extends AbstractClassData {
+public class PairValueGenerator extends AbstractClassData {
     
     private String tokenizedRawData;
+    
+    public PairValueGenerator(ClassGenerator basicGenerator) {
+        super(basicGenerator);
+    }
 
     @Override
     public void prepareData() throws Exception {
+        
+        reset();
         
         String[] nameTypePairs = tokenizedRawData.split(String.valueOf(COMA));
         int max = nameTypePairs.length;
@@ -22,6 +28,7 @@ public class PairValueClass extends AbstractClassData {
         for (int i = 0; i < max; i++) {
 
             String nombreColumna = nameTypePairs[i];
+            i++;
             String tipoColumna = nameTypePairs[i];
             
             getNombreAtributosJava().add(nombreColumna);
@@ -30,10 +37,17 @@ public class PairValueClass extends AbstractClassData {
         }
     }
     
+    @Override
+    public String getClassText() {
+          createClassDefinitions();
+          createClassMethods();
+          return super.getClassText();
+    }
+    
     private void createClassDefinitions() {
         salida.append("public class ").append(getClassName()).append(" { \n");
         for (int i = 0; i < getNombreAtributosJava().size(); i++) {
-            salida.append("private");
+            salida.append("private ");
             salida.append(getTipoAtributosJava().get(i));
             salida.append(' ');
             salida.append(getNombreAtributosJava().get(i));
@@ -42,12 +56,16 @@ public class PairValueClass extends AbstractClassData {
 
         }
 
+       
+    }
+
+    private void createClassMethods() {
         for (int i = 0; i < getNombreAtributosJava().size(); i++) {
 	
             String capitalizedPropertyName = capitalizeWord(getNombreAtributosJava().get(i));
             String nombreFuncionGet = "public final " + getTipoAtributosJava()
                     .get(i) + " get" + capitalizedPropertyName + "()";
-            String nombreFuncionSet = "public final void set" 
+            String nombreFuncionSet = "public final void set"
                     + capitalizedPropertyName + "(" 
                     + getTipoAtributosJava().get(i) + " valor )";
             salida.append(nombreFuncionGet);

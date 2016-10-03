@@ -31,8 +31,8 @@ public class ClassData extends AbstractClassData {
     public String getClassText() {
         mapeo = new StringBuilder("HashMap<String, String> columToProp = new HashMap<String, String>();\n");
         toString = new StringBuilder("StringBuffer toStr = new StringBuffer();\n");
+        
         createClassDefinitions();
-
         createClassMethods();
 
 

@@ -73,12 +73,6 @@
                 <Property name="toolTipText" type="java.lang.String" value="No emplear los tipos java devueltos por la base de datos"/>
               </Properties>
             </MenuItem>
-            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="chkCodigodeConexion">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Generar codigo de conexi&#xf3;n"/>
-                <Property name="toolTipText" type="java.lang.String" value="Te genera gratis el codigo para poner valores a los campos"/>
-              </Properties>
-            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="helpMenu">
