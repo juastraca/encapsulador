@@ -125,23 +125,13 @@ public class ClassData extends AbstractClassData {
     }
 
     private String convertirNombreColumna(String cname) {
-        cname = cname.toLowerCase();
-        int lastIndex = 0;
-        int index = 0;
-        while (index >= 0) {
-            index = cname.indexOf("_");
-            if (index >= 0) {
-                String tmp = cname.substring(0, index);
-                lastIndex = index + 1;
-                String tail = cname.substring(lastIndex);
-
-                char first = Character.toUpperCase(tail.charAt(0));
-                tail = first + tail.substring(1);
-                cname = tmp + first + tail.substring(1);
-
-            }
+        String[] parts = cname.split("_");
+        StringBuilder sb = new StringBuilder();
+        for(String part:parts){
+            sb.append(part.charAt(0));
+            sb.append(part.substring(1).toLowerCase());
         }
-        return cname;
+        return sb.toString();
     }
 
     private String getTipoColumnaFromMetadata(String tipoColumna, ResultSetMetaData rsmd, int i) throws SQLException {
