@@ -73,6 +73,15 @@
                 <Property name="toolTipText" type="java.lang.String" value="No emplear los tipos java devueltos por la base de datos"/>
               </Properties>
             </MenuItem>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="chkMyBatis">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Generar ResultMap para MyBatis"/>
+                <Property name="actionCommand" type="java.lang.String" value="Generar ResultMap para MyBatis"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkMyBatisActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="helpMenu">

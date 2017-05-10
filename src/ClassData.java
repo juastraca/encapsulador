@@ -14,6 +14,7 @@ public class ClassData extends AbstractClassData {
     private ResultSetMetaData rsmd;
     private StringBuilder mapeo;
     private StringBuilder toString;
+    private StringBuilder myBatisMapper;
 
     /**
      *
@@ -31,6 +32,8 @@ public class ClassData extends AbstractClassData {
     public String getClassText() {
         mapeo = new StringBuilder("HashMap<String, String> columToProp = new HashMap<String, String>();\n");
         toString = new StringBuilder("StringBuffer toStr = new StringBuffer();\n");
+        myBatisMapper = new StringBuilder("/** ResultMap para MyBatis \n");
+       
         
         createClassDefinitions();
         createClassMethods();
@@ -41,7 +44,11 @@ public class ClassData extends AbstractClassData {
 
     private void createClassMethods() {
         // crea getters y setters
+        if(isMyBatisGenerator()){
+            salida.append("\n").append(myBatisMapper.toString()).append("\n");
+        }
         for (int i = 0; i < nombreAtributosJava.size(); i++) {
+            
 
             String nombreFuncionGet = "public " + tipoAtributosJava.get(i) + " get" + nombreAtributosJava.get(i).substring(0, 1).toUpperCase() + nombreAtributosJava.get(i).substring(1) + "()";
             String nombreFuncionSet = "public void set" + nombreAtributosJava.get(i).substring(0, 1).toUpperCase() + nombreAtributosJava.get(i).substring(1) + "(" + tipoAtributosJava.get(i) + " valor)";
@@ -104,6 +111,14 @@ public class ClassData extends AbstractClassData {
             mapeo.append("\"")
                     .append(nombreAtributosJava.get(i))
                     .append("\");\n");
+            
+            if(isMyBatisGenerator()){
+                myBatisMapper.append("<resultMap type=\"com.xxxx.").append(getClassName())
+                        .append("\" id=\"").append(getClassName()).append("\">\n");
+                myBatisMapper.append("<id column=\"").append(nombreColumnasSql.get(i)).append("\"");
+                myBatisMapper.append(" property=\"").append(nombreAtributosJava.get(i)).append("\"").append("/>\n");
+            
+            }
             toString.append("toStr.append(");
             toString.append(nombreAtributosJava.get(i));
             toString.append(");\n");
@@ -112,6 +127,7 @@ public class ClassData extends AbstractClassData {
             toString.append("');\n");
 
         }
+        myBatisMapper.append("\n</resultMap>\n**/");
     }
 
     private String convertirDatoJava(String tipoDato) {
@@ -131,7 +147,10 @@ public class ClassData extends AbstractClassData {
             sb.append(part.charAt(0));
             sb.append(part.substring(1).toLowerCase());
         }
-        return sb.toString();
+        
+        String tmp = sb.toString();
+        String result = Character.toLowerCase(tmp.charAt(0)) + tmp.substring(1);
+        return result;
     }
 
     private String getTipoColumnaFromMetadata(String tipoColumna, ResultSetMetaData rsmd, int i) throws SQLException {

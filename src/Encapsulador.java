@@ -81,6 +81,7 @@ public class Encapsulador extends javax.swing.JFrame {
         claseMenu = new javax.swing.JMenu();
         chktipo = new javax.swing.JCheckBoxMenuItem();
         chkConversionInterna = new javax.swing.JCheckBoxMenuItem();
+        chkMyBatis = new javax.swing.JCheckBoxMenuItem();
         helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
 
@@ -234,6 +235,15 @@ public class Encapsulador extends javax.swing.JFrame {
         chkConversionInterna.setToolTipText("No emplear los tipos java devueltos por la base de datos");
         claseMenu.add(chkConversionInterna);
 
+        chkMyBatis.setText("Generar ResultMap para MyBatis");
+        chkMyBatis.setActionCommand("Generar ResultMap para MyBatis");
+        chkMyBatis.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkMyBatisActionPerformed(evt);
+            }
+        });
+        claseMenu.add(chkMyBatis);
+
         menuBar.add(claseMenu);
 
         helpMenu.setText("Ayuda");
@@ -334,6 +344,10 @@ public class Encapsulador extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txturlActionPerformed
 
+    private void chkMyBatisActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkMyBatisActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_chkMyBatisActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -372,6 +386,9 @@ public class Encapsulador extends javax.swing.JFrame {
         else{
             cd.setGenerationMode(GenerationMode.NORMAL);
         }cd.prepareData();
+        
+        cd.setMyBatisGenerator(chkMyBatis.isSelected());
+        
         return cd;
     }
 
@@ -521,6 +538,7 @@ public class Encapsulador extends javax.swing.JFrame {
     private javax.swing.JButton btnconectar;
     private javax.swing.JCheckBoxMenuItem chkConversionInterna;
     private javax.swing.JCheckBoxMenuItem chkFicherito;
+    private javax.swing.JCheckBoxMenuItem chkMyBatis;
     private javax.swing.JCheckBoxMenuItem chktipo;
     private javax.swing.JMenu claseMenu;
     private javax.swing.JMenuItem exitMenuItem;

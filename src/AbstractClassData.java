@@ -22,6 +22,7 @@ public abstract class AbstractClassData implements ClassGenerator {
     protected ClassGenerator generator;
     private GenerationMode generationMode;
     private String className;
+    private boolean myBatisGenerator;
     
     public AbstractClassData(ClassGenerator cg){
             this.generator = cg;
@@ -120,6 +121,20 @@ public abstract class AbstractClassData implements ClassGenerator {
      */
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    /**
+     * @return the myBatisGenerator
+     */
+    public boolean isMyBatisGenerator() {
+        return myBatisGenerator;
+    }
+
+    /**
+     * @param myBatisGenerator the myBatisGenerator to set
+     */
+    public void setMyBatisGenerator(boolean myBatisGenerator) {
+        this.myBatisGenerator = myBatisGenerator;
     }
     
 }
