@@ -94,6 +94,8 @@ public class ClassData extends AbstractClassData {
     private void createClassDefinitions() {
         //crea la definicion de campos, metodo mapeo y toString
         salida.append("public class ").append(getClassName()).append(" { \n");
+        myBatisMapper.append("<resultMap type=\"com.xxxx.").append(getClassName())
+                        .append("\" id=\"").append(getClassName()).append("\">\n");
         for (int i = 0; i < nombreAtributosJava.size(); i++) {
             salida.append("@Column(name=\"");
             salida.append(nombreColumnasSql.get(i))
@@ -113,8 +115,7 @@ public class ClassData extends AbstractClassData {
                     .append("\");\n");
             
             if(isMyBatisGenerator()){
-                myBatisMapper.append("<resultMap type=\"com.xxxx.").append(getClassName())
-                        .append("\" id=\"").append(getClassName()).append("\">\n");
+               
                 myBatisMapper.append("<id column=\"").append(nombreColumnasSql.get(i)).append("\"");
                 myBatisMapper.append(" property=\"").append(nombreAtributosJava.get(i)).append("\"").append("/>\n");
             
